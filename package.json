@@ -1,16 +1,81 @@
 {
   "name": "@ldesign/tree",
   "version": "0.1.0",
-  "description": "高级树形组件 - 虚拟滚动、拖拽排序、懒加载",
-  "keywords": ["ldesign", "tree", "virtual-scroll"],
+  "description": "高级树形组件 - 虚拟滚动、拖拽排序、懒加载、搜索过滤、批量操作",
+  "keywords": [
+    "ldesign",
+    "tree",
+    "virtual-scroll",
+    "drag-drop",
+    "lazy-load",
+    "search",
+    "vue",
+    "react",
+    "lit",
+    "web-component"
+  ],
   "author": "LDesign Team",
   "license": "MIT",
   "type": "module",
   "main": "./lib/index.cjs",
   "module": "./es/index.js",
-  "scripts": {"build": "ldesign-builder build -f esm,cjs,dts"},
-  "dependencies": {"@ldesign/shared": "workspace:*"},
-  "devDependencies": {"@ldesign/builder": "workspace:*", "typescript": "^5.7.3"}
+  "types": "./es/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./es/index.js",
+      "require": "./lib/index.cjs",
+      "types": "./es/index.d.ts"
+    },
+    "./vue": {
+      "import": "./es/adapters/vue/index.js",
+      "types": "./es/adapters/vue/index.d.ts"
+    },
+    "./react": {
+      "import": "./es/adapters/react/index.js",
+      "types": "./es/adapters/react/index.d.ts"
+    },
+    "./lit": {
+      "import": "./es/adapters/lit/index.js",
+      "types": "./es/adapters/lit/index.d.ts"
+    }
+  },
+  "files": [
+    "es",
+    "lib",
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "ldesign-builder build -f esm,cjs,dts",
+    "dev": "ldesign-builder build -f esm,cjs,dts --watch"
+  },
+  "dependencies": {
+    "@ldesign/shared": "workspace:*"
+  },
+  "peerDependencies": {
+    "vue": ">=3.0.0",
+    "react": ">=16.8.0",
+    "lit": ">=2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "lit": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@ldesign/builder": "workspace:*",
+    "@types/react": "^18.0.0",
+    "lit": "^2.8.0",
+    "typescript": "^5.7.3",
+    "vue": "^3.0.0"
+  }
 }
 
 
