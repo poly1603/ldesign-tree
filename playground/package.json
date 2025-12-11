@@ -1,0 +1,24 @@
+{
+  "name": "@ldesign/tree-playground",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Tree 组件演示项目",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@ldesign/tree-core": "workspace:*",
+    "@ldesign/tree-vue": "workspace:*",
+    "lucide-vue-next": "^0.454.0",
+    "vue": "^3.4.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.0",
+    "typescript": "^5.7.3",
+    "vite": "^5.0.0",
+    "vue-tsc": "^2.0.0"
+  }
+}
