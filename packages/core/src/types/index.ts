@@ -41,6 +41,28 @@ export interface NodeState {
   focused: boolean
 }
 
+/** 节点徽章 */
+export interface NodeBadge {
+  /** 徽章文本 */
+  text: string
+  /** 徽章类型 */
+  type?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'
+  /** 自定义颜色 */
+  color?: string
+  /** 自定义背景色 */
+  bgColor?: string
+}
+
+/** 节点标签 */
+export interface NodeTag {
+  /** 标签文本 */
+  text: string
+  /** 标签颜色 */
+  color?: string
+  /** 是否可关闭 */
+  closable?: boolean
+}
+
 /** 树节点数据 */
 export interface TreeNodeData<T = unknown> {
   /** 节点唯一标识 */
@@ -65,6 +87,30 @@ export interface TreeNodeData<T = unknown> {
   selectable?: boolean
   /** 自定义数据 */
   data?: T
+  /** 节点徽章 */
+  badge?: NodeBadge
+  /** 节点标签列表 */
+  tags?: NodeTag[]
+  /** 节点描述（副标题） */
+  description?: string
+  /** 节点样式类名 */
+  className?: string
+  /** 节点操作按钮 */
+  actions?: NodeAction[]
+}
+
+/** 节点操作按钮 */
+export interface NodeAction {
+  /** 操作标识 */
+  key: string
+  /** 操作图标 */
+  icon?: string
+  /** 操作标题 */
+  title?: string
+  /** 是否禁用 */
+  disabled?: boolean
+  /** 是否危险操作 */
+  danger?: boolean
 }
 
 /** 扁平化的树节点（内部使用） */
@@ -99,6 +145,20 @@ export interface FlatNode<T = unknown> {
   originalIndex: number
   /** 自定义数据 */
   data?: T
+  /** 节点徽章 */
+  badge?: NodeBadge
+  /** 节点标签列表 */
+  tags?: NodeTag[]
+  /** 节点描述（副标题） */
+  description?: string
+  /** 节点样式类名 */
+  className?: string
+  /** 节点操作按钮 */
+  actions?: NodeAction[]
+  /** 是否是同级中最后一个节点 */
+  isLast?: boolean
+  /** 祖先节点是否是最后一个节点 */
+  ancestorsLast?: boolean[]
 }
 
 // ==================== 配置类型 ====================
@@ -167,6 +227,42 @@ export interface TreeOptions<T = unknown> {
   expandIcon?: string | ((expanded: boolean) => string)
   /** 自定义复选框图标 */
   checkboxIcon?: (state: CheckState) => string
+  /** 树显示模式 */
+  displayMode?: 'default' | 'directory' | 'card' | 'compact'
+  /** 是否显示节点描述 */
+  showDescription?: boolean
+  /** 是否显示节点徽章 */
+  showBadge?: boolean
+  /** 是否显示节点标签 */
+  showTags?: boolean
+  /** 是否显示节点操作按钮 */
+  showActions?: boolean | 'hover'
+  /** 右键菜单配置 */
+  contextMenu?: ContextMenuItem[] | ((node: FlatNode<T>) => ContextMenuItem[])
+  /** 节点操作点击回调 */
+  onActionClick?: (action: NodeAction, node: FlatNode<T>) => void
+  /** 高亮节点 ID 列表 */
+  highlightIds?: NodeId[]
+  /** 高亮颜色 */
+  highlightColor?: string
+}
+
+/** 右键菜单项 */
+export interface ContextMenuItem {
+  /** 菜单项标识 */
+  key: string
+  /** 菜单项文本 */
+  label: string
+  /** 菜单项图标 */
+  icon?: string
+  /** 是否禁用 */
+  disabled?: boolean
+  /** 是否是危险操作 */
+  danger?: boolean
+  /** 分隔线 */
+  divider?: boolean
+  /** 子菜单 */
+  children?: ContextMenuItem[]
 }
 
 // ==================== 事件类型 ====================
@@ -276,6 +372,9 @@ export interface TreeEventMap<T = unknown> {
   'search': SearchEvent<T>
   'data-change': { nodes: FlatNode<T>[] }
   'scroll': { scrollTop: number; scrollLeft: number }
+  'action-click': { action: NodeAction; node: FlatNode<T> }
+  'context-menu-click': { key: string; node: FlatNode<T> }
+  'tag-close': { tag: NodeTag; node: FlatNode<T> }
 }
 
 /** 事件监听器类型 */

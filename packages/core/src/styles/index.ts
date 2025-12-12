@@ -20,6 +20,7 @@ export const treeStyles = `
   --tree-bg-drop: #dbeafe;
   
   --tree-border-color: #e5e7eb;
+  --tree-line-color: #d1d5db;
   --tree-border-radius: 6px;
   
   --tree-primary: #3b82f6;
@@ -53,11 +54,14 @@ export const treeStyles = `
   --tree-bg-drop: #1e3a5f;
   
   --tree-border-color: #374151;
+  --tree-line-color: #d1d5db;
 }
 
 /* ==================== 容器 ==================== */
 .ltree {
   position: relative;
+  width: 100%;
+  height: 100%;
   font-family: var(--tree-font-family);
   font-size: var(--tree-font-size);
   line-height: var(--tree-line-height);
@@ -104,13 +108,19 @@ export const treeStyles = `
   min-width: 100%;
 }
 
-/* ==================== 节点 ==================== */
-.ltree-node {
+/* ==================== 节点内容容器 ==================== */
+.ltree-node-content {
   position: relative;
   display: flex;
   align-items: center;
+  flex: 1;
+  min-width: 0;
+  padding: 0 12px;
   min-height: var(--tree-item-height);
+  height: 100%;
+  gap: 4px;
   cursor: pointer;
+  border-radius: var(--tree-border-radius);
   transition: background-color var(--tree-transition-duration) var(--tree-transition-timing);
 }
 
@@ -151,6 +161,7 @@ export const treeStyles = `
 
 /* ==================== 节点内容 ==================== */
 .ltree-node-content {
+  position: relative;
   display: flex;
   align-items: center;
   flex: 1;
@@ -189,6 +200,15 @@ export const treeStyles = `
 .ltree-expand-icon:hover {
   color: var(--tree-primary);
   background: var(--tree-bg-hover);
+}
+
+/* 展开图标 loading 状态 */
+.ltree-expand-icon--loading {
+  color: var(--tree-primary);
+}
+
+.ltree-expand-icon--loading svg {
+  animation: ltree-spin 1s linear infinite;
 }
 
 /* ==================== 复选框 ==================== */
@@ -253,13 +273,198 @@ export const treeStyles = `
   color: var(--tree-primary);
 }
 
-/* ==================== 节点文本 ==================== */
-.ltree-node-label {
+/* ==================== 节点主内容区域 ==================== */
+.ltree-node-main {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
   flex: 1;
   min-width: 0;
+  gap: 8px;
+}
+
+/* ==================== 节点文本 ==================== */
+.ltree-node-label {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-height: 1.5;
+}
+
+/* ==================== 节点描述 ==================== */
+.ltree-node-desc {
+  font-size: 12px;
+  color: var(--tree-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 1;
+  opacity: 0.7;
+}
+
+/* 描述前的分隔符 */
+.ltree-node-desc::before {
+  content: '—';
+  margin-right: 6px;
+  opacity: 0.4;
+}
+
+/* ==================== 徽章 ==================== */
+.ltree-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  height: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 10px;
+  background: #e5e7eb;
+  color: #6b7280;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.ltree-badge--primary {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.ltree-badge--success {
+  background: #10b981;
+  color: #fff;
+}
+
+.ltree-badge--warning {
+  background: #f59e0b;
+  color: #fff;
+}
+
+.ltree-badge--danger {
+  background: #ef4444;
+  color: #fff;
+}
+
+.ltree-badge--info {
+  background: #06b6d4;
+  color: #fff;
+}
+
+/* ==================== 标签 ==================== */
+.ltree-tags {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+/* 当有徽章时，标签不需要 auto margin */
+.ltree-badge + .ltree-tags {
+  margin-left: 6px;
+}
+
+.ltree-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 8px;
+  height: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 4px;
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.ltree-tag--success {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.ltree-tag--warning {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.ltree-tag-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  margin-left: 2px;
+  border-radius: 50%;
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.ltree-tag-close:hover {
+  background: rgba(0, 0, 0, 0.1);
+  opacity: 1;
+}
+
+.ltree-tag-close svg {
+  width: 10px;
+  height: 10px;
+}
+
+/* ==================== 操作按钮 ==================== */
+.ltree-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.ltree-actions--hover {
+  opacity: 0;
+  transition: opacity var(--tree-transition-duration);
+}
+
+.ltree-node:hover .ltree-actions--hover {
+  opacity: 1;
+}
+
+.ltree-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--tree-text-secondary);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all var(--tree-transition-duration);
+}
+
+.ltree-action-btn:hover {
+  background: var(--tree-bg-hover);
+  color: var(--tree-primary);
+}
+
+.ltree-action-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.ltree-action-btn--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ltree-action-btn--disabled:hover {
+  background: transparent;
+  color: var(--tree-text-secondary);
+}
+
+.ltree-action-btn--danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
 }
 
 /* ==================== 搜索高亮 ==================== */
@@ -293,32 +498,96 @@ export const treeStyles = `
 }
 
 /* ==================== 连接线 ==================== */
+.ltree--show-line .ltree-node-content {
+  position: relative;
+}
+
 .ltree-line {
   position: absolute;
-  background-color: var(--tree-border-color);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .ltree-line--vertical {
   width: 1px;
   top: 0;
   bottom: 0;
+  background-color: var(--tree-line-color);
 }
 
 .ltree-line--horizontal {
   height: 1px;
-  width: calc(var(--tree-indent) / 2);
   top: 50%;
+  background-color: var(--tree-line-color);
+}
+
+.ltree-line--corner {
+  width: 1px;
+  top: 0;
+  height: 50%;
+  background-color: var(--tree-line-color);
+}
+
+/* L 形拐角的水平部分用伪元素 */
+.ltree-line--corner::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: var(--tree-indent, 24px);
+  height: 1px;
+  background-color: var(--tree-line-color);
+}
+
+/* 尾线 (连接展开的父节点和子节点) */
+.ltree-line--tail {
+  width: 1px;
+  top: 50%;
+  bottom: 0;
+  background-color: var(--tree-line-color);
+  z-index: 1;
 }
 
 /* 虚线样式 */
-.ltree--line-dashed .ltree-line {
+.ltree-line--dashed {
   background: repeating-linear-gradient(
     to bottom,
-    var(--tree-border-color) 0,
-    var(--tree-border-color) 4px,
+    var(--tree-line-color) 0,
+    var(--tree-line-color) 4px,
     transparent 4px,
     transparent 8px
-  );
+  ) !important;
+}
+
+.ltree-line--horizontal.ltree-line--dashed {
+  background: repeating-linear-gradient(
+    to right,
+    var(--tree-line-color) 0,
+    var(--tree-line-color) 4px,
+    transparent 4px,
+    transparent 8px
+  ) !important;
+}
+
+/* 点线样式 */
+.ltree-line--dotted {
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--tree-line-color) 0,
+    var(--tree-line-color) 2px,
+    transparent 2px,
+    transparent 4px
+  ) !important;
+}
+
+.ltree-line--horizontal.ltree-line--dotted {
+  background: repeating-linear-gradient(
+    to right,
+    var(--tree-line-color) 0,
+    var(--tree-line-color) 2px,
+    transparent 2px,
+    transparent 4px
+  ) !important;
 }
 
 /* ==================== 拖拽 ==================== */
@@ -441,6 +710,150 @@ export const treeStyles = `
 
 .ltree-expand-icon--expanded svg {
   transform: rotate(90deg);
+}
+
+/* ==================== 高亮节点 ==================== */
+.ltree-node--highlighted {
+  background-color: var(--tree-highlight-color, #fef3c7) !important;
+}
+
+/* ==================== 目录树模式 ==================== */
+.ltree--directory .ltree-node-content {
+  gap: 6px;
+}
+
+.ltree--directory .ltree-node-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.ltree--directory .ltree-node-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ==================== 卡片模式 ==================== */
+.ltree--card .ltree-node {
+  margin: 4px 8px;
+  border-radius: var(--tree-border-radius);
+  border: 1px solid var(--tree-border-color);
+  background: var(--tree-bg);
+}
+
+.ltree--card .ltree-node:hover {
+  border-color: var(--tree-primary);
+  box-shadow: var(--tree-shadow-sm);
+}
+
+.ltree--card .ltree-node--selected {
+  border-color: var(--tree-primary);
+  background: var(--tree-bg-selected);
+}
+
+.ltree--card .ltree-node-content {
+  padding: 8px 12px;
+}
+
+.ltree--card .ltree-node-main {
+  gap: 4px;
+}
+
+/* ==================== 紧凑模式 ==================== */
+.ltree--compact {
+  --tree-item-height: 26px;
+  --tree-font-size: 13px;
+  --tree-indent: 16px;
+}
+
+.ltree--compact .ltree-node-content {
+  padding: 0 8px;
+  gap: 2px;
+}
+
+.ltree--compact .ltree-expand-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.ltree--compact .ltree-expand-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.ltree--compact .ltree-checkbox {
+  width: 14px;
+  height: 14px;
+}
+
+.ltree--compact .ltree-node-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.ltree--compact .ltree-node-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.ltree--compact .ltree-badge {
+  height: 16px;
+  font-size: 10px;
+  padding: 0 4px;
+}
+
+.ltree--compact .ltree-tag {
+  height: 16px;
+  font-size: 10px;
+  padding: 0 4px;
+}
+
+
+/* ==================== 展开/收起动画 ==================== */
+.ltree--animate .ltree-node {
+  animation: ltree-fade-in var(--tree-transition-duration) ease-out;
+}
+
+@keyframes ltree-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 滑动展开动画 */
+.ltree--slide .ltree-node {
+  animation: ltree-slide-down var(--tree-transition-duration) ease-out;
+  transform-origin: top;
+}
+
+@keyframes ltree-slide-down {
+  from {
+    opacity: 0;
+    max-height: 0;
+    transform: scaleY(0);
+  }
+  to {
+    opacity: 1;
+    max-height: var(--tree-item-height);
+    transform: scaleY(1);
+  }
+}
+
+/* ==================== 加载动画 ==================== */
+.ltree-node-loading {
+  display: inline-flex;
+  margin-left: 8px;
+  color: var(--tree-primary);
+  animation: ltree-spin 1s linear infinite;
+}
+
+@keyframes ltree-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* ==================== 响应式 ==================== */

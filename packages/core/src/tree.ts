@@ -139,10 +139,21 @@ export class Tree<T = unknown> implements TreeInstance<T> {
 
     // 监听数据变化，刷新渲染
     this.store.on('data-change', () => this.renderer.render())
-    this.store.on('node-expand', () => this.renderer.render())
+    this.store.on('node-expand', async (e) => {
+      // 如果配置了懒加载且节点没有子节点，则触发加载
+      if (this.lazyLoader && e.node.childIds.length === 0 && !e.node.isLeaf) {
+        try {
+          await this.lazyLoader.load(e.node.id)
+        } catch (error) {
+          console.error('Failed to load children:', error)
+        }
+      }
+      this.renderer.render()
+    })
     this.store.on('node-collapse', () => this.renderer.render())
     this.store.on('node-select', () => this.renderer.render())
     this.store.on('node-check', () => this.renderer.render())
+    this.store.on('load-data', () => this.renderer.render())
 
     // 挂载渲染器
     this.renderer.mount(this.container)

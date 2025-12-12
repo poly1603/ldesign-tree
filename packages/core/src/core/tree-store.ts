@@ -56,6 +56,16 @@ const DEFAULT_OPTIONS: Required<TreeOptions> = {
   nodeRenderer: undefined as any,
   expandIcon: undefined as any,
   checkboxIcon: undefined as any,
+  // 新增选项
+  displayMode: 'default',
+  showDescription: false,
+  showBadge: false,
+  showTags: false,
+  showActions: false,
+  contextMenu: undefined as any,
+  onActionClick: undefined as any,
+  highlightIds: [],
+  highlightColor: undefined as any,
 }
 
 export class TreeStore<T = unknown> extends EventEmitter<T> {
@@ -899,14 +909,20 @@ export class TreeStore<T = unknown> extends EventEmitter<T> {
   private rebuildFlatNodes(): void {
     this.flatNodes = []
 
-    const traverse = (ids: NodeId[]) => {
-      ids.forEach(id => {
+    const traverse = (ids: NodeId[], ancestorsLast: boolean[] = []) => {
+      const total = ids.length
+      ids.forEach((id, index) => {
         const node = this.nodeMap.get(id)
         if (node) {
+          // 更新 isLast 和 ancestorsLast
+          const isLast = index === total - 1
+          node.isLast = isLast
+          node.ancestorsLast = [...ancestorsLast]
+
           node.originalIndex = this.flatNodes.length
           this.flatNodes.push(node)
           if (node.childIds.length) {
-            traverse(node.childIds)
+            traverse(node.childIds, [...ancestorsLast, isLast])
           }
         }
       })

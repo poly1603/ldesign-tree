@@ -122,9 +122,16 @@ export class DOMRenderer<T = unknown> {
   private createStructure(): void {
     if (!this.container) return
     const prefix = this.classPrefix
+    const options = this.store.options
 
     this.wrapper = document.createElement('div')
-    this.wrapper.className = prefix
+    // 添加显示模式类名
+    const modeClass = options.displayMode && options.displayMode !== 'default'
+      ? `${prefix}--${options.displayMode}`
+      : ''
+    const lineClass = options.showLine ? `${prefix}--show-line` : ''
+    const animateClass = options.animate !== false ? `${prefix}--animate` : ''
+    this.wrapper.className = cx(prefix, modeClass, lineClass, animateClass) || prefix
     this.wrapper.setAttribute('role', 'tree')
     this.wrapper.tabIndex = 0
 
@@ -204,6 +211,10 @@ export class DOMRenderer<T = unknown> {
     if (!this.content || !this.virtualScroller) return
 
     const options = this.store.options
+
+    // 更新 totalCount 以反映当前可见节点数
+    this.virtualScroller.setTotalCount(nodes.length)
+
     const range = this.virtualScroller.getVisibleRange()
     const totalHeight = nodes.length * options.itemHeight
 
@@ -212,6 +223,7 @@ export class DOMRenderer<T = unknown> {
 
     const visibleNodes = nodes.slice(range.start, range.end)
 
+    // 清理不在可见范围内的节点
     this.nodePool.forEach((element, id) => {
       if (!visibleNodes.some(n => isSameId(n.id, id))) {
         element.remove()
@@ -219,6 +231,7 @@ export class DOMRenderer<T = unknown> {
       }
     })
 
+    // 渲染可见节点
     visibleNodes.forEach((node, index) => {
       const actualIndex = range.start + index
       const element = this.renderNode(node)
@@ -264,6 +277,9 @@ export class DOMRenderer<T = unknown> {
     element.setAttribute('aria-level', String(node.level + 1))
     element.draggable = options.draggable && node.draggable && !node.disabled
 
+    // 检查是否是高亮节点
+    const isHighlighted = options.highlightIds?.some(id => isSameId(id, node.id))
+
     element.className = cx(
       `${prefix}-node`,
       node.state.expanded && `${prefix}-node--expanded`,
@@ -275,7 +291,14 @@ export class DOMRenderer<T = unknown> {
       node.state.dropPosition && `${prefix}-node--drop-${node.state.dropPosition}`,
       node.state.matched && `${prefix}-node--matched`,
       node.isLeaf && `${prefix}-node--leaf`,
+      isHighlighted && `${prefix}-node--highlighted`,
+      node.className,
     ) || `${prefix}-node`
+
+    // 设置高亮颜色
+    if (isHighlighted && options.highlightColor) {
+      element.style.setProperty('--tree-highlight-color', options.highlightColor)
+    }
 
     element.innerHTML = this.renderNodeContent(node, searchQuery)
     return element
@@ -291,6 +314,11 @@ export class DOMRenderer<T = unknown> {
     check: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
     minus: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg>',
     loader: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ltree-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>',
+    x: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',
+    more: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>',
+    plus: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>',
+    trash: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>',
+    edit: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>',
   }
 
   private renderNodeContent(node: FlatNode<T>, searchQuery: string): string {
@@ -300,13 +328,32 @@ export class DOMRenderer<T = unknown> {
 
     let html = `<div class="${prefix}-node-content" style="padding-left: ${indent}px">`
 
-    // 展开图标 (使用 Lucide chevron-right)
+    // 连接线 (当 showLine 为 true 时)
+    if (options.showLine) {
+      if (node.level > 0) {
+        html += this.renderConnectLines(node)
+      }
+
+      // 如果是展开的非叶子节点，渲染向下延伸的尾线 (Tail Line)
+      if (!node.isLeaf && node.state.expanded) {
+        const tailPos = (node.level + 0.5) * options.indent
+        html += `<span class="${prefix}-line ${prefix}-line--tail ${prefix}-line--${options.lineStyle || 'solid'}" style="left: ${tailPos}px"></span>`
+      }
+    }
+
+    // 展开图标 (使用 Lucide chevron-right) - loading 时显示 loading 图标
+    const isLoading = node.state.loading
     const expandClass = cx(
       `${prefix}-expand-icon`,
       node.isLeaf && `${prefix}-expand-icon--leaf`,
       node.state.expanded && `${prefix}-expand-icon--expanded`,
+      isLoading && `${prefix}-expand-icon--loading`,
     )
-    html += `<span class="${expandClass}" data-action="toggle">${node.isLeaf ? '' : this.icons.chevronRight}</span>`
+    let expandIcon = ''
+    if (!node.isLeaf) {
+      expandIcon = isLoading ? this.icons.loader : this.icons.chevronRight
+    }
+    html += `<span class="${expandClass}" data-action="toggle">${expandIcon}</span>`
 
     // 复选框 (使用 Lucide check/minus)
     if (options.checkable && node.checkable) {
@@ -330,16 +377,109 @@ export class DOMRenderer<T = unknown> {
       html += `<span class="${prefix}-node-icon">${icon}</span>`
     }
 
+    // 主内容区域
+    html += `<div class="${prefix}-node-main">`
+
     // 文本
     const label = searchQuery ? highlightText(node.label, searchQuery, `${prefix}-highlight`) : node.label
     html += `<span class="${prefix}-node-label">${label}</span>`
 
-    // 加载状态 (使用 Lucide loader)
-    if (node.state.loading) {
-      html += `<span class="${prefix}-node-loading">${this.icons.loader}</span>`
+    // 描述文本
+    if (options.showDescription && node.description) {
+      html += `<span class="${prefix}-node-desc">${node.description}</span>`
+    }
+
+    html += '</div>' // 关闭 node-main
+
+    // 徽章
+    if (options.showBadge && node.badge) {
+      const badgeClass = cx(
+        `${prefix}-badge`,
+        node.badge.type && `${prefix}-badge--${node.badge.type}`,
+      )
+      const badgeStyle = node.badge.color || node.badge.bgColor
+        ? `style="color: ${node.badge.color || 'inherit'}; background: ${node.badge.bgColor || 'inherit'}"`
+        : ''
+      html += `<span class="${badgeClass}" ${badgeStyle}>${node.badge.text}</span>`
+    }
+
+    // 标签
+    if (options.showTags && node.tags?.length) {
+      html += `<div class="${prefix}-tags">`
+      node.tags.forEach(tag => {
+        const tagStyle = tag.color ? `style="background: ${tag.color}"` : ''
+        const closeBtn = tag.closable
+          ? `<span class="${prefix}-tag-close" data-action="tag-close" data-tag="${tag.text}">${this.icons.x}</span>`
+          : ''
+        html += `<span class="${prefix}-tag" ${tagStyle}>${tag.text}${closeBtn}</span>`
+      })
+      html += '</div>'
+    }
+
+    // 加载状态已移到展开图标位置显示
+
+    // 操作按钮
+    if (options.showActions && node.actions?.length) {
+      const actionsClass = cx(
+        `${prefix}-actions`,
+        options.showActions === 'hover' && `${prefix}-actions--hover`,
+      )
+      html += `<div class="${actionsClass}">`
+      node.actions.forEach(action => {
+        const actionClass = cx(
+          `${prefix}-action-btn`,
+          action.disabled && `${prefix}-action-btn--disabled`,
+          action.danger && `${prefix}-action-btn--danger`,
+        )
+        const icon = action.icon || this.icons.more
+        html += `<button class="${actionClass}" data-action="action" data-action-key="${action.key}" title="${action.title || ''}" ${action.disabled ? 'disabled' : ''}>${icon}</button>`
+      })
+      html += '</div>'
     }
 
     html += '</div>'
+    return html
+  }
+
+  /**
+   * 渲染连接线
+   */
+  private renderConnectLines(node: FlatNode<T>): string {
+    const prefix = this.classPrefix
+    const options = this.store.options
+    const lineStyle = options.lineStyle || 'solid'
+    const indent = options.indent
+    let html = ''
+
+    // 根节点不渲染连接线
+    if (node.level === 0) {
+      return ''
+    }
+
+    // 为每个祖先层级渲染垂直线（从 level 0 到 level-1）
+    // 如果祖先是最后一个子节点，则不渲染该层的垂直线
+    for (let i = 0; i < node.level - 1; i++) {
+      const isAncestorLast = node.ancestorsLast?.[i] ?? false
+      if (!isAncestorLast) {
+        const leftPos = (i + 0.5) * indent
+        html += `<span class="${prefix}-line ${prefix}-line--vertical ${prefix}-line--${lineStyle}" style="left: ${leftPos}px"></span>`
+      }
+    }
+
+    // 当前节点的连接线
+    const currentLineLeft = (node.level - 0.5) * indent
+
+    const hLineWidth = indent / 2
+
+    if (node.isLast) {
+      // 最后一个节点：渲染 L 形拐角（垂直线只到一半高度，水平线通过伪元素）
+      html += `<span class="${prefix}-line ${prefix}-line--corner ${prefix}-line--${lineStyle}" style="left: ${currentLineLeft}px; --tree-indent: ${hLineWidth}px"></span>`
+    } else {
+      // 非最后一个节点：渲染完整垂直线 + 水平线
+      html += `<span class="${prefix}-line ${prefix}-line--vertical ${prefix}-line--${lineStyle}" style="left: ${currentLineLeft}px"></span>`
+      html += `<span class="${prefix}-line ${prefix}-line--horizontal ${prefix}-line--${lineStyle}" style="left: ${currentLineLeft}px; width: ${hLineWidth + 1}px"></span>`
+    }
+
     return html
   }
 
@@ -362,7 +502,10 @@ export class DOMRenderer<T = unknown> {
     const node = this.store.getNode(nodeId)
     if (!node) return
 
-    const action = (target as HTMLElement).dataset.action
+    // 使用 closest 查找最近的带有 data-action 属性的元素
+    // 这样即使点击 SVG 内部元素也能正确获取 action
+    const actionElement = target.closest('[data-action]') as HTMLElement | null
+    const action = actionElement?.dataset.action
 
     if (action === 'toggle') {
       this.store.toggleExpand(nodeId)
@@ -370,6 +513,29 @@ export class DOMRenderer<T = unknown> {
     } else if (action === 'check') {
       this.store.toggleCheck(nodeId)
       this.render()
+    } else if (action === 'action') {
+      // 操作按钮点击
+      const actionKey = actionElement?.dataset.actionKey
+      if (actionKey) {
+        const nodeAction = node.actions?.find(a => a.key === actionKey)
+        if (nodeAction && !nodeAction.disabled) {
+          this.store.emit('action-click', { action: nodeAction, node })
+          // 调用配置的回调
+          const options = this.store.options
+          if (options.onActionClick) {
+            options.onActionClick(nodeAction, node)
+          }
+        }
+      }
+    } else if (action === 'tag-close') {
+      // 标签关闭
+      const tagText = actionElement?.dataset.tag
+      if (tagText) {
+        const tag = node.tags?.find(t => t.text === tagText)
+        if (tag) {
+          this.store.emit('tag-close', { tag, node })
+        }
+      }
     } else {
       if (!node.disabled && node.selectable) {
         this.store.selectNode(nodeId, event.ctrlKey || event.metaKey)

@@ -38,9 +38,14 @@ export function flattenTree<T>(
   nodes: TreeNodeData<T>[],
   parentId: NodeId | null = null,
   level: number = 0,
-  result: FlatNode<T>[] = []
+  result: FlatNode<T>[] = [],
+  ancestorsLast: boolean[] = []
 ): FlatNode<T>[] {
+  const total = nodes.length
+
   nodes.forEach((node, index) => {
+    const isLast = index === total - 1
+
     const flatNode: FlatNode<T> = {
       id: node.id,
       parentId,
@@ -57,12 +62,20 @@ export function flattenTree<T>(
       state: createDefaultNodeState(),
       originalIndex: result.length,
       data: node.data,
+      // 新增属性
+      badge: node.badge,
+      tags: node.tags,
+      description: node.description,
+      className: node.className,
+      actions: node.actions,
+      isLast,
+      ancestorsLast: [...ancestorsLast],
     }
 
     result.push(flatNode)
 
     if (node.children?.length) {
-      flattenTree(node.children, node.id, level + 1, result)
+      flattenTree(node.children, node.id, level + 1, result, [...ancestorsLast, isLast])
     }
   })
 

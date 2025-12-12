@@ -181,4 +181,80 @@ const loadChildren = async (node) => {
 }
 \x3C/script>`,
   },
+  rich: {
+    native: `const tree = createTree('#container', richData, {
+  showIcon: true,
+  showDescription: true,  // 显示节点描述
+  showBadge: true,        // 显示徽章
+  showTags: true,         // 显示标签
+  showActions: 'hover',   // 悬停显示操作按钮
+  defaultExpandAll: true,
+  onActionClick: (action, node) => {
+    console.log('操作:', action.key, '节点:', node.label)
+  },
+})
+
+// 节点数据示例
+const richData = [{
+  id: '1',
+  label: 'My Project',
+  description: 'A awesome project',
+  badge: { text: 'v2.0', type: 'primary' },
+  tags: [{ text: 'UI', color: '#3b82f6' }],
+  actions: [{ key: 'edit', title: 'Edit' }],
+}]`,
+    vue: `\x3Ctemplate>
+  \x3CLTree
+    :data="richData"
+    :options="{
+      showIcon: true,
+      showDescription: true,
+      showBadge: true,
+      showTags: true,
+      showActions: 'hover',
+      onActionClick: handleAction,
+    }"
+  />
+\x3C/template>
+
+\x3Cscript setup>
+const handleAction = (action, node) => {
+  console.log('操作:', action.key, node.label)
+}
+
+const richData = [{
+  id: '1',
+  label: 'Button.vue',
+  description: 'Button component',
+  badge: { text: 'NEW', type: 'success' },
+  tags: [{ text: 'UI' }],
+  actions: [{ key: 'edit', title: 'Edit' }],
+}]
+\x3C/script>`,
+  },
+  directory: {
+    native: `const tree = createTree('#container', directoryData, {
+  showIcon: true,
+  showLine: true,         // 显示连接线
+  lineStyle: 'solid',     // 线条样式: solid | dashed | dotted
+  defaultExpandAll: true,
+})`,
+    vue: `\x3Ctemplate>
+  \x3CLTree
+    :data="directoryData"
+    :options="{
+      showIcon: true,
+      showLine: true,
+      lineStyle: 'solid',
+    }"
+  />
+\x3C/template>
+
+\x3Cscript setup>
+// 连接线样式选项:
+// - 'solid': 实线
+// - 'dashed': 虚线
+// - 'dotted': 点线
+\x3C/script>`,
+  },
 }

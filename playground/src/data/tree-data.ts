@@ -278,3 +278,179 @@ export const lazyTreeData: TreeNodeData[] = GITHUB_REPOS.map((repo, index) => ({
   isLeaf: false,
   data: { path: '', owner: repo.owner, repo: repo.repo },
 }))
+
+// 带徽章和标签的演示数据
+export const richTreeData: TreeNodeData[] = [
+  {
+    id: 'project',
+    label: 'My Project',
+    description: 'A awesome frontend project',
+    badge: { text: 'v2.0', type: 'primary' },
+    children: [
+      {
+        id: 'src',
+        label: 'src',
+        description: 'Source code directory',
+        children: [
+          {
+            id: 'components',
+            label: 'components',
+            description: 'Reusable UI components',
+            badge: { text: '12', type: 'info' },
+            children: [
+              {
+                id: 'button',
+                label: 'Button.vue',
+                description: 'Button component',
+                tags: [{ text: 'UI', color: '#3b82f6' }],
+                actions: [
+                  { key: 'edit', title: 'Edit', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>' },
+                  { key: 'delete', title: 'Delete', danger: true, icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>' },
+                ]
+              },
+              {
+                id: 'input',
+                label: 'Input.vue',
+                description: 'Input component',
+                tags: [{ text: 'UI', color: '#3b82f6' }, { text: 'Form', color: '#10b981' }],
+              },
+              {
+                id: 'modal',
+                label: 'Modal.vue',
+                description: 'Modal dialog component',
+                badge: { text: 'NEW', type: 'success' },
+              },
+            ],
+          },
+          {
+            id: 'utils',
+            label: 'utils',
+            description: 'Utility functions',
+            children: [
+              { id: 'format', label: 'format.ts', description: 'String formatting utilities' },
+              { id: 'validate', label: 'validate.ts', description: 'Validation helpers' },
+            ],
+          },
+          {
+            id: 'hooks',
+            label: 'hooks',
+            description: 'Custom hooks/composables',
+            badge: { text: '5', type: 'info' },
+            children: [
+              { id: 'use-toggle', label: 'useToggle.ts' },
+              { id: 'use-fetch', label: 'useFetch.ts', badge: { text: 'WIP', type: 'warning' } },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'public',
+        label: 'public',
+        description: 'Static assets',
+        children: [
+          { id: 'favicon', label: 'favicon.ico' },
+          { id: 'robots', label: 'robots.txt' },
+        ],
+      },
+      {
+        id: 'tests',
+        label: 'tests',
+        description: 'Test files',
+        badge: { text: '85%', type: 'success' },
+        children: [
+          {
+            id: 'unit', label: 'unit', children: [
+              { id: 'button-spec', label: 'Button.spec.ts' },
+              { id: 'input-spec', label: 'Input.spec.ts' },
+            ]
+          },
+          {
+            id: 'e2e', label: 'e2e', children: [
+              { id: 'home-spec', label: 'home.spec.ts' },
+            ]
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'config',
+    label: 'Configuration',
+    description: 'Project configuration files',
+    children: [
+      { id: 'package', label: 'package.json', tags: [{ text: 'Config', color: '#f59e0b' }] },
+      { id: 'tsconfig', label: 'tsconfig.json', tags: [{ text: 'Config', color: '#f59e0b' }] },
+      { id: 'vite-config', label: 'vite.config.ts', tags: [{ text: 'Config', color: '#f59e0b' }] },
+      { id: 'readme', label: 'README.md', badge: { text: 'Docs', type: 'info' } },
+    ],
+  },
+]
+
+// 带连接线的目录树数据
+export const directoryTreeData: TreeNodeData[] = [
+  {
+    id: 'root',
+    label: '/',
+    children: [
+      {
+        id: 'home',
+        label: 'home',
+        children: [
+          {
+            id: 'user',
+            label: 'user',
+            children: [
+              { id: 'documents', label: 'Documents' },
+              { id: 'downloads', label: 'Downloads' },
+              { id: 'pictures', label: 'Pictures' },
+              { id: 'desktop', label: 'Desktop' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'etc',
+        label: 'etc',
+        children: [
+          { id: 'hosts', label: 'hosts' },
+          { id: 'passwd', label: 'passwd' },
+          {
+            id: 'ssh', label: 'ssh', children: [
+              { id: 'sshd_config', label: 'sshd_config' },
+            ]
+          },
+        ],
+      },
+      {
+        id: 'var',
+        label: 'var',
+        children: [
+          {
+            id: 'log', label: 'log', children: [
+              { id: 'syslog', label: 'syslog' },
+              { id: 'auth', label: 'auth.log' },
+            ]
+          },
+          {
+            id: 'www', label: 'www', children: [
+              { id: 'html', label: 'html' },
+            ]
+          },
+        ],
+      },
+      {
+        id: 'usr',
+        label: 'usr',
+        children: [
+          { id: 'bin', label: 'bin' },
+          { id: 'lib', label: 'lib' },
+          {
+            id: 'local', label: 'local', children: [
+              { id: 'local-bin', label: 'bin' },
+            ]
+          },
+        ],
+      },
+    ],
+  },
+]

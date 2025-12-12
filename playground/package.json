@@ -13,7 +13,8 @@
     "@ldesign/tree-core": "workspace:*",
     "@ldesign/tree-vue": "workspace:*",
     "lucide-vue-next": "^0.454.0",
-    "vue": "^3.4.0"
+    "vue": "^3.4.0",
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.0",
